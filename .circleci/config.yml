@@ -52,26 +52,6 @@ jobs:
         # These cache paths were specified in the 1.0 config
         - ~/.android
         - ~/android
-    # Test
-    #   This would typically be a build job when using workflows, possibly combined with build
-    # This is based on your 1.0 configuration file or project settings
-    # Teardown
-    - store_artifacts:
-        name: Store test reports
-        path: app/build/reports/tests
-        destination: tests
-    - store_artifacts:
-        name: Store apk and other outputs
-        path: app/build/outputs
-        destination: outputs
-    - store_artifacts:
-        name: Store Lint report
-        path: app/build/reports/lint-results.html
-        destination: lint
-    - store_artifacts:
-        name: Store Jacoco report
-        path: app/build/reports/jacoco
-        destination: tests
-
+    
     # run tests!
     - run: gradle test
