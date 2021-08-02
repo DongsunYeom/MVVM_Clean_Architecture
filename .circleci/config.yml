@@ -10,11 +10,17 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/volodia-chornenkyy/circleci-android-example
+    working_directory: ~/repo
     parallelism: 1
     shell: /bin/bash --login
     docker:
         - image: circleci/android:api-25-alpha
+
+    environment:
+      # Customize the JVM maximum heap limit
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    
     steps:
     # Machine Setup
     #   If you break your build into multiple jobs with workflows, you will probably want to do the parts of this that are relevant in each
@@ -27,6 +33,8 @@ jobs:
         keys:
         # This branch if available
         - v1-dep-{{ .Branch }}-
+
+    - run: gradle dependencies
     # Save dependency cache
     - save_cache:
         key: v1-dep-{{ .Branch }}-{{ epoch }}
@@ -47,8 +55,6 @@ jobs:
     # Test
     #   This would typically be a build job when using workflows, possibly combined with build
     # This is based on your 1.0 configuration file or project settings
-    - run: ./gradlew build
-    - run: ./gradlew jacocoTestReport
     # Teardown
     - store_artifacts:
         name: Store test reports
@@ -66,3 +72,6 @@ jobs:
         name: Store Jacoco report
         path: app/build/reports/jacoco
         destination: tests
+
+    # run tests!
+    - run: gradle test
