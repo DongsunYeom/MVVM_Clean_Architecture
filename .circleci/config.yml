@@ -11,7 +11,6 @@ version: 2
 jobs:
   build:
     working_directory: ~/repo
-    parallelism: 1
     shell: /bin/bash --login
     docker:
         - image: circleci/android:api-25-alpha
@@ -31,27 +30,16 @@ jobs:
     # Restore the dependency cache
     - restore_cache:
         keys:
-        # This branch if available
-        - v1-dep-{{ .Branch }}-
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
 
     - run: gradle dependencies
     # Save dependency cache
     - save_cache:
-        key: v1-dep-{{ .Branch }}-{{ epoch }}
-        paths:
-        # This is a broad list of cache paths to include many possible development environments
-        # You can probably delete some of these entries
-        - vendor/bundle
-        - ~/virtualenvs
-        - ~/.m2
-        - ~/.ivy2
-        - ~/.bundle
-        - ~/.go_workspace
-        - ~/.gradle
-        - ~/.cache/bower
-        # These cache paths were specified in the 1.0 config
-        - ~/.android
-        - ~/android
-    
+        paths: 
+          - ~/.gradle
+        key: v1-dependencies-{{ checksum "build.gradle" }}
+
     # run tests!
     - run: gradle test
