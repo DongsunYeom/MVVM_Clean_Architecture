@@ -1,44 +1,27 @@
-# This configuration was automatically generated from a CircleCI 1.0 config.
-# It should include any build commands you had along with commands that CircleCI
-# inferred from your project structure. We strongly recommend you read all the
-# comments in this file to understand the structure of CircleCI 2.0, as the idiom
-# for configuration has changed substantially in 2.0 to allow arbitrary jobs rather
-# than the prescribed lifecycle of 1.0. In general, we recommend using this generated
-# configuration as a reference rather than using it in production, though in most
-# cases it should duplicate the execution of your original 1.0 config.
-# https://circleci.com/api/v1.1/project/github/volodia-chornenkyy/circleci-android-example/config-translation?branch=v2_migration
 version: 2
 jobs:
   build:
-    working_directory: ~/repo
+    working_directory: ~/code
     docker:
-        - image: circleci/android:api-25-alpha
-
+      - image: circleci/android:api-25-alpha
     environment:
-      # Customize the JVM maximum heap limit
       JVM_OPTS: -Xmx3200m
-      TERM: dumb
-    
     steps:
-    # Machine Setup
-    #   If you break your build into multiple jobs with workflows, you will probably want to do the parts of this that are relevant in each
-    # The following `checkout` command checks out your code to your working directory. In 1.0 we did this implicitly. In 2.0 you can choose where in the course of a job your code should be checked out.
-    - checkout
-    # Dependencies
-    #   This would typically go in either a build or a build-and-test job when using workflows
-    # Restore the dependency cache
-    - restore_cache:
-        keys:
-            - v1-dependencies-{{ checksum "build.gradle" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
+      - checkout
+      - restore_cache:
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "browserstack_android_sample/build.gradle" }}
+#      - run:
+#         name: Chmod permissions #if permission for Gradlew Dependencies fail, use this.
+#         command: sudo chmod +x ./gradlew
+      - run:
+          name: Download Dependencies
+          command: ./gradlew androidDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
 
-    - run: gradle dependencies
-    # Save dependency cache
-    - save_cache:
-        paths: 
-          - ~/.gradle
-        key: v1-dependencies-{{ checksum "build.gradle" }}
-
-    # run tests!
-    - run: gradle test
+      # Generate apk
+      - run: ./gradlew assembleDebug
+      # run tests!
+      - run: ./gradlew test
