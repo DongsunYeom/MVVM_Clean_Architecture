@@ -14,15 +14,16 @@ jobs:
 #      - run:
 #         name: Chmod permissions #if permission for Gradlew Dependencies fail, use this.
 #         command: sudo chmod +x ./gradlew
+      - run:
+          name: Download Dependencies
+          command: sudo chmod +x ./gradlew androidDependencies
       - save_cache:
           paths:
             - ~/.gradle
           key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
       - run:
-          name: Download Dependencies
-          command: |
-            sudo chmod +x ./gradlew
-            ./gradlew androidDependencies
+          name: Run Tests
+          command: ./gradlew lint test
       - run:
           name: Build
           command: |
@@ -31,11 +32,9 @@ jobs:
               else
                   ./gradlew --offline --stacktrace assemble${APP_BUILD_TYPE^}
               fi
-
       - store_artifacts:
           path: app/build/reports
           destination: reports
-
       - store_artifacts:
           path: app/build/outputs/apk
           destination: apk
